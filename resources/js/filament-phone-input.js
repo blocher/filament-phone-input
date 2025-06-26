@@ -228,9 +228,8 @@ export default function phoneInputFormComponent({
                     success(country);
                 } else {
                     try {
-                        this.$wire.dispatch('phoneInput::ipLookup', {
-                            statePath: this.statePath
-                        });
+                        // Call the method directly on the Livewire component
+                        await this.$wire.call("handleIpLookupRequest");
 
                         const dispatches =
                             this.$wire.__instance.effects?.dispatches;

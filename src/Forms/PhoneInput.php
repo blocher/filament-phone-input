@@ -2,13 +2,12 @@
 
 namespace Ysfkaya\FilamentPhoneInput\Forms;
 
-use Filament\Schemas\Components\Contracts\HasAffixActions;
 use Closure;
 use Filament\Forms\Components\Concerns\HasAffixes;
 use Filament\Forms\Components\Concerns\HasExtraInputAttributes;
 use Filament\Forms\Components\Concerns\HasPlaceholder;
 use Filament\Forms\Components\Field;
-use Filament\Pages\Page;
+use Filament\Schemas\Components\Contracts\HasAffixActions;
 use Filament\Support\RawJs;
 use Illuminate\Support\Facades\Http;
 use libphonenumber\PhoneNumberFormat;
@@ -97,34 +96,6 @@ class PhoneInput extends Field implements HasAffixActions
             return rescue(fn () => Http::get('https://ipinfo.io/json')->json('country'), app()->getLocale(), report: false);
         });
 
-        $this->registerListeners([
-            'phoneInput::ipLookup' => [
-                function (PhoneInput $component, string $statePath) {
-                    if ($statePath !== $component->getStatePath()) {
-                        return;
-                    }
-
-                    if (! $component->canPerformIpLookup()) {
-                        return;
-                    }
-
-                    /** @var Page $livewire */
-                    $livewire = $component->getLivewire();
-
-                    $country = $component->performIpLookup();
-
-                    if (! $country) {
-                        return;
-                    }
-
-                    $livewire->dispatch('phoneInput::setCountry', [
-                        'country' => $country,
-                        'statePath' => $statePath,
-                    ]);
-                },
-            ],
-        ]);
-
         $this->afterStateHydrated(function (PhoneInput $component, $livewire, $state) {
             $country = null;
 
@@ -132,6 +103,17 @@ class PhoneInput extends Field implements HasAffixActions
                 $country = data_get($livewire, $countryStatePath = $component->getCountryStatePath());
 
                 data_set($livewire, $countryStatePath, $country);
+            }
+
+            // Perform IP lookup if enabled and no country is set
+            if ($component->canPerformIpLookup() && ! $country && $component->getInitialCountry() === 'auto') {
+                $ipCountry = $component->performIpLookup();
+                if ($ipCountry) {
+                    $component->getLivewire()->dispatch('phoneInput::setCountry', [
+                        'country' => $ipCountry,
+                        'statePath' => $component->getStatePath(),
+                    ]);
+                }
             }
 
             if (! $state) {
@@ -627,5 +609,37 @@ class PhoneInput extends Field implements HasAffixActions
     public function getCustomOptions(): array
     {
         return $this->evaluate($this->customOptions);
+    }
+
+    public function handleIpLookup(): void
+    {
+        if (! $this->canPerformIpLookup()) {
+            return;
+        }
+
+        $country = $this->performIpLookup();
+
+        if (! $country) {
+            return;
+        }
+
+        $this->getLivewire()->dispatch('phoneInput::setCountry', [
+            'country' => $country,
+            'statePath' => $this->getStatePath(),
+        ]);
+    }
+
+    protected function generateRelativeStatePath($path, $isAbsolute = false)
+    {
+        if ($isAbsolute) {
+            return $path;
+        }
+
+        // If the path is already relative, return it as is
+        if (! str_starts_with($path, 'data.')) {
+            return 'data.' . $path;
+        }
+
+        return $path;
     }
 }

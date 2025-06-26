@@ -2,12 +2,10 @@
 
 namespace Ysfkaya\FilamentPhoneInput\Tests\Fixtures;
 
-use Filament\Forms;
-use Filament\Forms\Form;
+use BackedEnum;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\Hash;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use Ysfkaya\FilamentPhoneInput\Tables\PhoneColumn;
 use Ysfkaya\FilamentPhoneInput\Tests\Fixtures\FilamentPhoneInputUserResource\Pages;
@@ -16,7 +14,7 @@ class FilamentPhoneInputUserResource extends Resource
 {
     protected static ?string $model = FilamentPhoneInputUser::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static BackedEnum | string | null $navigationIcon = 'heroicon-o-users';
 
     protected static $phoneInputCallback = null;
 
@@ -52,27 +50,27 @@ class FilamentPhoneInputUserResource extends Resource
         return $callback(PhoneColumn::make('phone'));
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->schema([
-                Forms\Components\TextInput::make('name')
+                \Filament\Forms\Components\TextInput::make('name')
                     ->required()
                     ->autofocus()
                     ->placeholder('Enter a name...')
                     ->helperText('This is the name of the user.'),
-                Forms\Components\TextInput::make('email')
+                \Filament\Forms\Components\TextInput::make('email')
                     ->required()
                     ->placeholder('Enter an email address...')
                     ->helperText('This is the email address of the user.'),
 
-                Forms\Components\TextInput::make('password')
+                \Filament\Forms\Components\TextInput::make('password')
                     ->password()
                     ->required()
                     ->maxLength(255)
                     ->dehydrated(fn ($state) => filled($state))
                     ->afterStateHydrated(fn ($component) => $component->state(null))
-                    ->dehydrateStateUsing(fn ($state) => Hash::make($state)),
+                    ->dehydrateStateUsing(fn ($state) => \Illuminate\Support\Facades\Hash::make($state)),
 
                 static::getPhoneInput(),
             ]);
@@ -82,10 +80,10 @@ class FilamentPhoneInputUserResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                \Filament\Tables\Columns\TextColumn::make('name')
                     ->sortable()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('email')
+                \Filament\Tables\Columns\TextColumn::make('email')
                     ->sortable()
                     ->searchable(),
 
@@ -94,17 +92,9 @@ class FilamentPhoneInputUserResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ])
-            ->emptyStateActions([
-                Tables\Actions\CreateAction::make(),
-            ]);
+            ->actions([])
+            ->bulkActions([])
+            ->emptyStateActions([]);
     }
 
     public static function getRelations(): array

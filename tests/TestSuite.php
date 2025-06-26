@@ -61,5 +61,12 @@ trait TestSuite
 
         $app['config']->set('app.env', 'testing');
         $app['config']->set('app.key', 'base64:fs7e0Hwi58EfBeSzcP7OuM1gJkUOOMTXdK+5e51umeA=');
+
+        // Add session configuration for proper error handling
+        $app['config']->set('session.driver', 'array');
+        $app['config']->set('session.lifetime', 120);
+
+        // Ensure proper error handling
+        $app['config']->set('app.debug', false);
     }
 }

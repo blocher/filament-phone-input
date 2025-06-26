@@ -11,11 +11,12 @@
     "license": "MIT",
     "require": {
         "php": "^8.1",
-        "filament/filament": "^3.0",
+        "filament/filament": "^4.0",
         "propaganistas/laravel-phone": "^5.0|^6.0",
         "spatie/laravel-package-tools": "^1.92"
     },
     "require-dev": {
+        "filament/upgrade": "^4.0",
         "laravel/pint": "^1.0",
         "nunomaduro/collision": "^7.9|^8.1",
         "nunomaduro/larastan": "^2.0|^3.0",
@@ -68,6 +69,6 @@
             "phpstan/extension-installer": true
         }
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "beta",
     "prefer-stable": true
 }

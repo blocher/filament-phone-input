@@ -228,7 +228,9 @@ export default function phoneInputFormComponent({
                     success(country);
                 } else {
                     try {
-                        await this.$wire.call("handleIpLookup");
+                        this.$wire.dispatch('phoneInput::ipLookup', {
+                            statePath: this.statePath
+                        });
 
                         const dispatches =
                             this.$wire.__instance.effects?.dispatches;

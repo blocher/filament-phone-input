@@ -96,6 +96,11 @@ class PhoneInput extends Field implements HasAffixActions
             return rescue(fn () => Http::get('https://ipinfo.io/json')->json('country'), app()->getLocale(), report: false);
         });
 
+        // Listen for the ipLookup dispatch event
+        $this->dispatch('phoneInput::ipLookup', function (array $data) {
+            $this->handleIpLookup();
+        });
+
         $this->afterStateHydrated(function (PhoneInput $component, $livewire, $state) {
             $country = null;
 

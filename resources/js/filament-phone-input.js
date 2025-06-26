@@ -228,42 +228,31 @@ export default function phoneInputFormComponent({
                     success(country);
                 } else {
                     try {
-                        // Call the method directly on the Livewire component
-                        await this.$wire.call("handleIpLookupRequest");
+                        // Use a simple HTTP request to get the country
+                        const response = await fetch('https://ipinfo.io/json');
+                        const data = await response.json();
 
-                        const dispatches =
-                            this.$wire.__instance.effects?.dispatches;
+                        if (data.country) {
+                            const countryCode = data.country.toUpperCase();
 
-                        if (!dispatches) {
-                            return;
-                        }
+                            // Set the country in the intl-tel-input
+                            this.intlTelInput.setCountry(countryCode);
 
-                        const setCountryDispatch = dispatches.find(
-                            (dispatch) =>
-                                dispatch.name === "phoneInput::setCountry"
-                        );
-
-                        if (!setCountryDispatch) {
-                            return;
-                        }
-
-                        const params = setCountryDispatch.params[0];
-
-                        const { statePath, country } = params;
-
-                        if (statePath !== this.statePath) {
-                            return;
-                        }
-
-                        window.phoneInputGeoIpLookup = true;
-
-                        this.$nextTick(() => {
-                            success(country);
+                            // Update the cookie
                             setCookie(
                                 this.intlTelInputSelectedCountryCookieName,
-                                country
+                                countryCode
                             );
-                        });
+
+                            // Update the country state if needed
+                            if (this.countryState !== undefined) {
+                                this.countryState = countryCode;
+                            }
+
+                            success(countryCode);
+                        } else {
+                            failure(new Error('Could not determine country'));
+                        }
                     } catch (error) {
                         failure(error);
                     }

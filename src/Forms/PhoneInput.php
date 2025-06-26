@@ -629,11 +629,6 @@ class PhoneInput extends Field implements HasAffixActions
         ]);
     }
 
-    public function handleIpLookupRequest(): void
-    {
-        $this->handleIpLookup();
-    }
-
     protected function generateRelativeStatePath($path, $isAbsolute = false)
     {
         if ($isAbsolute) {
